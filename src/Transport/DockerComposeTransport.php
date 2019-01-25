@@ -10,6 +10,7 @@ use Consolidation\SiteProcess\Util\Escape;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Consolidation\SiteAlias\AliasRecord;
 use Consolidation\SiteProcess\Util\Shell;
+use Consolidation\Config\ConfigInterface;
 
 /**
  * DockerComposeTransport knows how to wrap a command such that it executes
@@ -20,10 +21,12 @@ class DockerComposeTransport implements TransportInterface
     protected $tty;
     protected $siteAlias;
     protected $cd;
+    protected $config;
 
-    public function __construct(AliasRecord $siteAlias)
+    public function __construct(AliasRecord $siteAlias, ConfigInterface $config)
     {
         $this->siteAlias = $siteAlias;
+        $this->config = $config;
     }
 
     /**
@@ -65,8 +68,8 @@ class DockerComposeTransport implements TransportInterface
      */
     protected function getTransportOptions()
     {
-        $transportOptions[] = $this->siteAlias->get('docker.service', '');
-        if ($options = $this->siteAlias->get('docker.exec.options', '')) {
+        $transportOptions[] = $this->siteAlias->getConfig($this->config, 'docker.service', '');
+        if ($options = $this->siteAlias->getConfig($this->config, 'docker.exec.options', '')) {
             array_unshift($transportOptions, Shell::preEscaped($options));
         }
         if (!$this->tty) {
